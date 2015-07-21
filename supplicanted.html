@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supplicanted Wifi Configurator</title>
+    <style type="text/css">
+        #content {
+            margin: 0 auto;
+            width: 300px;
+            background-color: lightgray;
+            text-align: center;
+        }
+        #face_login_badpassword, #face_wifi {
+            display: none;
+        }
+
+    </style>
+    <script type="text/javascript" src="/jquery.js"></script>
+    <script type="text/javascript">
+
+        var password = '';
+
+        $(function() {
+            $("#face_login_submit").click(function() {
+                password = $('#face_login_password').val();
+                $.post('/login/', {'password': password }, function(data) {
+                    $("#face_login").hide();
+                    $("#face_wifi").show();
+                }).fail(function() {
+                    alert('Bad password');
+                });;
+            });
+
+            $('#face_wifi_save').click(function() {
+                $.post('/set_wifi/', {
+                    'ssid': $("#face_wifi_ssid").val(),
+                    'passphrase': $('#face_wifi_psk').val(),
+                    'password': password
+                }, function() {
+                    alert('Saved, wpa_supplicant restarting');
+                });
+            });
+
+            setInterval(function() {
+                $.post('/status/', {'password': password}, function(data) {
+                    $('#face_wifi_status pre').html(data);
+                });
+            }, 5000);
+        });
+    </script>
+</head>
+<body>
+    <div id="content">
+        <h1>SMOK Z WiFi</h1>
+        <div id="face_login">
+            <input type="password" id="face_login_password"><br>
+            <input type="button" id="face_login_submit" value="Login"><br>
+        </div>
+        <div id="face_wifi">
+            SSID: <input type="text" id="face_wifi_ssid"><br>
+            PSK: <input type="password" id="face_wifi_psk"><br>
+            <input type="button" id="face_wifi_save" value="Save"><br>
+            <hr>
+            <div id="face_wifi_status"><pre>...</pre></div>
+        </div>
+    </div>
+</body>
+</html>
